@@ -1,29 +1,33 @@
 #include "video_sfml.h"
 
-sf::Clock clock;
 
 void video_sfml::TextureStreaming()
 {
-    if (ready_frame != FRAMES)
+    while (ready_frame != FRAMES)
     {
+        //auto startTime = std::chrono::steady_clock::now();
         if (ready_frame < 10)
         {
             path = "Resource//cutscene//000" + std::to_string(ready_frame) + ".png";
-            mov[ready_frame].loadFromFile(path);
-            ready_frame++;
+            this->buffer[ready_frame].loadFromFile(path);
+            this->ready_frame++;
         }
         else if (ready_frame < 100)
         {
             path = "Resource//cutscene//00" + std::to_string(ready_frame) + ".png";
-            mov[ready_frame].loadFromFile(path);
-            ready_frame++;
+            this->buffer[ready_frame].loadFromFile(path);
+            this->ready_frame++;
         }
         else if (ready_frame < 1000)
         {
             path = "Resource//cutscene//0" + std::to_string(ready_frame) + ".png";
-            mov[ready_frame].loadFromFile(path);
-            ready_frame++;
+            this->buffer[ready_frame].loadFromFile(path);
+            this->ready_frame++;
         }
+        
+        /*auto endTime = std::chrono::steady_clock::now();
+        std::cout << "Time elapsed - "
+            << std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() << '\n';*/
     }
 }
 
@@ -31,37 +35,67 @@ void video_sfml::GarbageCollector()
 {
     if (curr_frame > frame_mem_cleaner && frame_mem_cleaner != FRAMES)
     {
-        mov[frame_mem_cleaner].~Image();
+        buffer[frame_mem_cleaner].~Image();
         frame_mem_cleaner++;
     }
 }
 
 sf::Sprite video_sfml::Play()
 {
-    TextureStreaming();
+    auto startTime = std::chrono::steady_clock::now();
     if (passedTime >= VIDEO_FPS && curr_frame != FRAMES)
     {
-        passedTime = static_cast<int>(clock.restart().asMicroseconds());
         if (curr_frame <= ready_frame)
         {
-            image.loadFromImage(mov[curr_frame]);
-            a.setTexture(image);
-            curr_frame++;
-            return a;
+            if (gpu_texture_loaded)
+            {
+                frame.setTexture(gpu_frame);
+                gpu_texture_loaded = false;
+                curr_frame++;
+            }
+            else
+            {
+                gpu_frame.loadFromImage(buffer[curr_frame]);
+                frame.setTexture(gpu_frame);
+                curr_frame++;
+            }
         }
-        else { std::cout << "frame skipping" << '\n'; return a; }
+        else { std::cout << "frame skipping" << '\n'; }
+        passedTime = static_cast<int>(clock.restart().asMicroseconds());
     }
     else if (passedTime < VIDEO_FPS) 
     {
-        passedTime += static_cast<int>(clock.restart().asMicroseconds()); return a;
+        if (!gpu_texture_loaded && curr_frame != FRAMES && curr_frame <= ready_frame)
+        {
+            gpu_frame.loadFromImage(buffer[curr_frame]);
+            gpu_texture_loaded = true;
+            std::cout << "GPU Loaded " << curr_frame << '\n';
+        }
+        passedTime += static_cast<int>(clock.restart().asMicroseconds());
     }
+    
+    GarbageCollector();
+    
+    //std::cout << passedTime << '\n';
+    auto endTime = std::chrono::steady_clock::now();
+        std::cout << "Time elapsed - "
+            << std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() << '\n';
+    return frame;
 }
 
-video_sfml::video_sfml(const std::string& path, const unsigned int& framesAmount, const unsigned int& FPS)
+video_sfml::video_sfml(const std::string& path, const unsigned int& framesAmount, const unsigned int& FPS,
+    const sf::RenderWindow& window)
 {
 	VIDEO_FPS = 1000000 / FPS;
 	FRAMES = framesAmount;
 	this->path = path;
+
+    gpu_frame.setSmooth(true);
+    
+    frame.setOrigin(sf::Vector2f(640, 360));
+    frame.setScale(sf::Vector2f(window.getSize().x / 1280.0, window.getSize().y / 720.0));
+    frame.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2));
+    
 }
 
 void video_sfml::Prebuffering(const unsigned int pre_loaded_frames)
@@ -82,8 +116,8 @@ void video_sfml::Prebuffering(const unsigned int pre_loaded_frames)
             {
                 prefix = "0" + std::to_string(ready_frame) + ".png";
             }
-            mov[ready_frame].loadFromFile(path + prefix);
-            std::cout << "loaded" << ready_frame << std::endl;
+            buffer[ready_frame].loadFromFile(path + prefix);
+            std::cout << "loaded " << ready_frame << std::endl;
         }
     }
     else
@@ -92,9 +126,14 @@ void video_sfml::Prebuffering(const unsigned int pre_loaded_frames)
     }
 }
 
+void video_sfml::StartStreaming()
+{
+    std::thread load_thread(&video_sfml::TextureStreaming, this);
+    load_thread.detach();
+}
+
 sf::RenderWindow& video_sfml::VideoShow(sf::RenderWindow& window)
 {
-    window.clear();
     window.draw(Play());
     return window;
 }
