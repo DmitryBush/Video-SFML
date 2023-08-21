@@ -131,9 +131,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleApplication1.cpp" />
+    <ClCompile Include="fpng.cpp" />
     <ClCompile Include="video_sfml.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="fpng.h" />
     <ClInclude Include="video_sfml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

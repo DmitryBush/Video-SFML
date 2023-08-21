@@ -21,9 +21,15 @@
     <ClCompile Include="video_sfml.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="fpng.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="video_sfml.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="fpng.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

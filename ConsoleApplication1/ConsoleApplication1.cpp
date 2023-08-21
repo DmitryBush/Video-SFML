@@ -3,18 +3,28 @@
 #include <Windows.h>
 #include <chrono>
 #include "video_sfml.h"
+#include "fpng.h"
 
 int main()
 {
-    /*sf::Image mov;
-    sf::Texture tex;
- auto startTime = std::chrono::steady_clock::now();
-    mov.loadFromFile("Resource//test//0000_BigFile.png");
-    tex.loadFromImage(mov);
-   
-    auto endTime = std::chrono::steady_clock::now();
-    std::cout << "Time elapsed - "
-        << std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() << '\n';*/
+    /*std::vector<uint8_t> fpngd_decode_buffer;
+    std::vector<uint8_t> fpng_file_buf;
+    uint32_t channels_in_file;
+    uint32_t decoded_width, decoded_height;
+    uint32_t desired_chans = 4;
+    fpng::fpng_init();
+    if(fpng::fpng_decode_file("fpng.png",
+        fpngd_decode_buffer, decoded_width, decoded_height, channels_in_file, desired_chans) 
+        == fpng::FPNG_DECODE_SUCCESS)
+    {
+        std::cout << "uspex";
+    }
+    else
+    {
+        std::cout << "ne uspex";
+    }*/
+
+    //system("pause");
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
 
@@ -23,9 +33,10 @@ int main()
     window.setFramerateLimit(60);
     window.setVerticalSyncEnabled(true);
 
-    video_sfml video("Resource//cutscene//", 298, 60, window);
+    video_sfml video("Resource//cutscene//", 298, 120, window);
     video.Prebuffering(120);
     video.StartStreaming();
+    video.Start();
     while (true)
     {
         sf::Event event;
