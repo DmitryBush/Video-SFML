@@ -1,2 +1,33 @@
 ﻿  ConsoleApplication1.cpp
-  ConsoleApplication1.vcxproj -> D:\Project\Video-SFML\x64\Debug\ConsoleApplication1.exe
+  video_sfml.cpp
+C:\Users\Bush\Documents\Project\Video-SFML\ConsoleApplication1\video_sfml.cpp(69,77): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+C:\Users\Bush\Documents\Project\Video-SFML\ConsoleApplication1\video_sfml.cpp(103,81): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
+          with
+          [
+              T=float
+          ]
+C:\Users\Bush\Documents\Project\Video-SFML\ConsoleApplication1\video_sfml.cpp(103,52): warning C4244: аргумент: преобразование "double" в "T", возможна потеря данных
+          with
+          [
+              T=float
+          ]
+C:\Users\Bush\Documents\Project\Video-SFML\ConsoleApplication1\video_sfml.cpp(104,79): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+C:\Users\Bush\Documents\Project\Video-SFML\ConsoleApplication1\video_sfml.cpp(104,55): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+  Создание кода...
+  ConsoleApplication1.vcxproj -> C:\Users\Bush\Documents\Project\Video-SFML\x64\Debug\ConsoleApplication1.exe

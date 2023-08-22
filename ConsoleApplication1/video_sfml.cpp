@@ -33,14 +33,14 @@ void video_sfml::TextureStreaming()
 
 void video_sfml::GarbageCollector()
 {
-    if (curr_frame > frame_mem_cleaner && frame_mem_cleaner != FRAMES)
+    if (curr_frame > frame_mem_cleaner && frame_mem_cleaner <= FRAMES)
     {
         buffer[frame_mem_cleaner].~Image();
         frame_mem_cleaner++;
     }
 }
 
-void video_sfml::Play(bool sync)
+void video_sfml::Play()
 {
     track.play();
     while (curr_frame <= FRAMES)
@@ -49,7 +49,7 @@ void video_sfml::Play(bool sync)
             (track.getStatus() == sf::Music::Stopped && curr_frame <= FRAMES))
         {
             //auto startTime = std::chrono::steady_clock::now();
-            if (passedTime >= VIDEO_FPS && curr_frame <= FRAMES)
+            if (passedTime >= VIDEO_FPS - 200 && curr_frame <= FRAMES)
             {
                 if (curr_frame < ready_frame.load(std::memory_order_acquire))
                 {
@@ -57,7 +57,6 @@ void video_sfml::Play(bool sync)
                     {
                         frame.setTexture(gpu_frame);
                         gpu_texture_loaded = false;
-                        curr_frame++;
                     }
                     else
                     {
@@ -69,14 +68,15 @@ void video_sfml::Play(bool sync)
                 else { std::cout << "frame skipping" << '\n'; }
                 passedTime = static_cast<int>(clock.restart().asMicroseconds());
             }
-            else if (passedTime < VIDEO_FPS)
+            else if (passedTime < VIDEO_FPS - 200)
             {
                 if (!gpu_texture_loaded && curr_frame <= FRAMES
                     && curr_frame < ready_frame.load(std::memory_order_acquire))
                 {
                     gpu_frame.loadFromImage(buffer[curr_frame]);
                     gpu_texture_loaded = true;
-                    //std::cout << "GPU Loaded " << curr_frame << '\n';
+                    curr_frame++;
+                    std::cout << "GPU Loaded " << curr_frame << '\n';
                 }
                 passedTime += static_cast<int>(clock.restart().asMicroseconds());
             }
@@ -104,6 +104,8 @@ video_sfml::video_sfml(const std::string& path,
     frame.setPosition(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2));
 
     track.openFromFile("Resource/cutscene/track.wav");
+
+    buffer.resize(299);
 }
 
 void video_sfml::Prebuffering(const unsigned int pre_loaded_frames)
@@ -134,18 +136,13 @@ void video_sfml::Prebuffering(const unsigned int pre_loaded_frames)
     }
 }
 
-void video_sfml::StartStreaming()
-{
-    std::thread load_thread(&video_sfml::TextureStreaming, this);
-
-    load_thread.detach();
-}
-
 void video_sfml::Start()
 {
-    std::thread playingthread(&video_sfml::Play, this, true);
-
+    std::thread load_thread(&video_sfml::TextureStreaming, this);
+    std::thread playingthread(&video_sfml::Play, this);
+    
     playingthread.detach();
+    load_thread.detach();
 }
 
 sf::RenderWindow& video_sfml::VideoShow(sf::RenderWindow& window)
